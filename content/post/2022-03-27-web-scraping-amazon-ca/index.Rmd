@@ -1,0 +1,138 @@
+---
+title: Web Scraping Amazon.ca
+author: ''
+date: '2022-03-27'
+slug: web-scraping-amazon-ca
+categories: []
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2022-03-27T17:08:15-04:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+Find this project on my Github [here](https://www.google.com "Google's Homepage")
+
+### **Main Objective**
+Attribute changes in apparent thermal conductivity in monitoring intervals to hydrological features or errors due to DTS data collection or processing
+
+### **Presented in this report**
+
+Plots of each monitoring interval isolated in SEN-06 multilevel system with 6 A-DTS snapshots accompanied by 
+
+1. Temperature plots of each test at each depth discrete measurement within monitoring interval determined by the A-DTS sampling resolution
+  - is the slope poorly fit resulting in unreliable thermal conductivity?
+  
+2. Instantaneous apparent thermal conductivities at each depth 
+  - how consistent is the instantaneous thermal conductivity with time compared to the overall thermal conductivity
+  
+3. ATV amplitude images
+  - attribute changes in thermal conductivity between tests with specific fractures/features
+  
+### **Work In Progess**
+
+- there is a problem with the instantaneous thermal conductivities for 2018_08_MLS generated with the "fit_convolve" function which I have not solved yet
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(data.table)
+library(dplyr)
+library(dts)
+library(tibble)
+library(duckdb)
+library(tidyverse)
+library(plotly)
+library(knitr)
+library(gridExtra)
+library(cowplot)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<!-- This chunk reads in all the data -->
+
+```{r echo=FALSE, warning=FALSE}
+
+# 1. read in port location data
+# ports <- data.table(read.csv("data/port_data.csv"))
+ports <- fread("data/port_data.csv")
+
+# 2. read in thermal conductivity data
+# therm <- (data.table(read.csv("data/thermal_conductivity.csv")))[,X := NULL]
+therm <- fread("data/thermal_conductivity.csv")[,V1 := NULL]
+
+# 3. read in temperature data
+temp <- fread("data/all_temperature_data.csv")[,c("V1", "variable"):=NULL]
+
+# 4. read in instantaneous thermal conductivites
+data <- readRDS("data/instantaneous_03_16.rds")
+instant <- data[[1]]
+overall <- data[[2]]
+overall$depth <- as.double(levels(overall$depth))[overall$depth]
+instant$depth <- instant$depth 
+overall$depth <- overall$depth 
+
+# 6. read in ATV amplitude
+amp <- readRDS("data/amplitude.rds")
+
+# now set distance intervals for atv data
+# to do this, extract distance from processed dts data
+x <- therm[test=="2018_08_MLS"]
+intervals <- x$depth
+```
+
+### All Thermal Conductivity Data 
+
+```{r echo=FALSE, warning=FALSE, fig.width=10, fig.height=10} 
+intercepts <- append(ports$TopDepth, ports$BottomDepth)
+
+full_therm <- ggplot(therm, aes(depth, Therm_con, group = test, color = test)) + 
+          geom_line(size=1.05) +
+          ylim(c(0,10)) +
+          scale_x_reverse() +
+          coord_flip() +
+          geom_vline(xintercept=intercepts) +
+          ggtitle("Port Thermal Conductivities") +
+          ylab("Thermal Conductivity (W/mK)") +
+          xlab("Depth Below Ground Surface (m)") +
+          theme(legend.position = 'none')
+
+#full_therm <- ggplotly(full_therm)
+
+full_rsq <- ggplot(therm, aes(depth, rsq, group = test, color = test)) + 
+          geom_line(size=1.05) +
+          ylim(c(0,1)) +
+          scale_x_reverse() +
+          coord_flip() +
+          geom_vline(xintercept=intercepts) +
+          ggtitle("R Squared") +
+          ylab("Thermal Conductivity (W/mK)") +
+          theme(axis.title.y = element_blank(),
+                axis.title.x = element_blank())
+          # theme(legend.position = 'none')
+
+#full_rsq <- ggplotly(full_stats)
+
+full_stderror <- ggplot(therm, aes(depth, ste, group = test, color = test)) +
+          geom_line() +
+          ylim(c(0,0.05)) +
+          scale_x_reverse() +
+          coord_flip() +
+          geom_vline(xintercept=intercepts) +
+          ggtitle("Standard Error") +
+          ylab("Thermal Conductivity (W/mK)") +
+          theme(axis.title.y = element_blank(),
+                axis.title.x = element_blank()
+                )
+
+#full_stderror <- ggplotly(full_stderror)
+
+plot_grid(full_therm, full_rsq, ncol=2, rel_widths = c(2/3, 1/3))
+# a <- subplot(full_therm, full_stats, shareX = TRUE, shareY=FALSE)
+# a %>% style(t, showlegend=FALSE, traces=6:14)
+```

@@ -9,29 +9,31 @@ headless: true
 # Order that this section appears on the page.
 weight: 30
 
-title: Skills
+title: Programming Languages
 subtitle:
 
 # Showcase personal skills or business features.
 # - Add/remove as many `feature` blocks below as you like.
 # - For available icons, see: https://wowchemy.com/docs/page-builder/#icons
 feature:
-- description: 90%
+- description: 
   icon: r-project
   icon_pack: fab
   name: R
-- description: 100%
+- description: 
   icon: python
   icon_pack: fab
   name: Python
-- description: 100%
+- description: 
   icon: c
   icon_pack: fab
   name: C Programming
-- description: 10%
+- description: 
   icon: html5
   icon_pack: fab
   name: HTML5
+
+active: false
 
 # Uncomment to use emoji icons.
 #- icon: ':smile:'

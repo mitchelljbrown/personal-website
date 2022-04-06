@@ -1,4 +1,5 @@
-# ---
+---
+active: false
 # # An instance of the Featured widget.
 # # Documentation: https://wowchemy.com/docs/page-builder/
 # widget: featured
@@ -33,4 +34,4 @@
 #   #   3 = Card
 #   #   4 = Citation (publication only)
 #   view: 3
-# ---
+---
